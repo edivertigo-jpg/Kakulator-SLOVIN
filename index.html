@@ -49,9 +49,43 @@
   .result .label{font-size:13px; color:var(--muted);}
   .result .value{font-size:36px; font-weight:600; color:var(--accent); margin-top:4px;}
   .formula{font-size:12px; color:var(--muted); text-align:center; margin-top:1.25rem;}
+
+  .install-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.45);
+    display:none; align-items:center; justify-content:center; z-index:999; padding:24px;
+  }
+  .install-overlay.show{display:flex;}
+  .install-box{
+    background:var(--card); border-radius:16px; padding:1.5rem; max-width:320px; width:100%;
+    text-align:center;
+  }
+  .install-box img{width:56px; height:56px; border-radius:14px; margin-bottom:12px;}
+  .install-box h2{font-size:16px; font-weight:500; margin:0 0 4px;}
+  .install-box p{font-size:13px; color:var(--muted); margin:0 0 1.25rem;}
+  .install-actions{display:flex; gap:8px;}
+  .install-actions button{
+    flex:1; height:44px; border-radius:10px; border:0.5px solid var(--border);
+    font-size:14px; font-weight:500; background:var(--bg); color:var(--text);
+  }
+  .install-actions button.primary{
+    background:var(--accent); color:white; border:none;
+  }
 </style>
 </head>
 <body>
+
+  <div class="install-overlay" id="installOverlay">
+    <div class="install-box">
+      <img src="icon-192.png" alt="">
+      <h2>Instal Kalkulator Slovin</h2>
+      <p>Tambahkan ke layar utama HP untuk akses lebih cepat, bisa dipakai offline.</p>
+      <div class="install-actions">
+        <button id="installLater">Nanti</button>
+        <button id="installNow" class="primary">Instal</button>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <h1>Kalkulator Rumus Slovin</h1>
 
@@ -89,6 +123,35 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
+
+// Tangkap event install PWA dan tampilkan pop-up custom otomatis
+let deferredPrompt = null;
+const overlay = document.getElementById('installOverlay');
+const btnInstall = document.getElementById('installNow');
+const btnLater = document.getElementById('installLater');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  overlay.classList.add('show');
+});
+
+btnInstall.addEventListener('click', async () => {
+  overlay.classList.remove('show');
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+});
+
+btnLater.addEventListener('click', () => {
+  overlay.classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  overlay.classList.remove('show');
+  deferredPrompt = null;
+});
 </script>
 </body>
 </html>
